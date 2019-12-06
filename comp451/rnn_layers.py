@@ -75,10 +75,10 @@ def rnn_step_backward(dnext_h, cache):
     dforward_pass = (1 - np.tanh(forward_pass)**2)*dnext_h
     
     dx = np.dot(dforward_pass,Wx.T)
-    dWx = np.dot(x.T,dforward)
-    dprev_h = np.dot(dforward,Wh.T)
-    dWh = np.dot(prev_h.T,dforward)
-    db = np.sum(dforward,axis=0)
+    dWx = np.dot(x.T,dforward_pass)
+    dprev_h = np.dot(dforward_pass,Wh.T)
+    dWh = np.dot(prev_h.T,dforward_pass)
+    db = np.sum(dforward_pass,axis=0)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ##############################################################################
@@ -124,7 +124,7 @@ def rnn_forward(x, h0, Wx, Wh, b):
     
     h[-1] = h0
     
-    for t in xrange(T):
+    for t in range(T):
         if t != 0:
             h_prev = h[t-1]
         else:
@@ -168,19 +168,19 @@ def rnn_backward(dh, cache):
     ##############################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    N,T,H = dg.shape
+    N,T,H = dh.shape
     D = cache[0][0].shape[1]
     
     dWx = np.zeros((D,H))
     dWh = np.zeros((H,H))
-    db = np.zzeros((H))
+    db = np.zeros((H))
     dh0 = np.zeros((N,H))
     dx = np.zeros((T,N,D))
     
     dh = dh.transpose(1,0,2)
     dh_prev = np.zeros((N,H))
     
-    for x in reversed(xrange(T)):
+    for x in reversed(range(T)):
         dh_current = dh[x] + dh_prev
         dx_t, dh_prev, dWx_t, dWh_t, db_t = rnn_step_backward(dh_current,cache[x])
         dx[x] = dx[x] + dx_t
