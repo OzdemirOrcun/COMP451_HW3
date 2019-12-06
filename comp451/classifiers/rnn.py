@@ -151,7 +151,7 @@ class CaptioningRNN(object):
         #Backward part
         dout, dw, db = temporal_affine_backward(dout, temp_affine_cache)
         grads['W_vocab'],grads['b_vocab'] = dw,db
-        dout, dh0, dWx, dWh, db = rnn_backward(dout, rnn_cache)
+        dout, dh0, dWx, dWh, db = rnn_backward(dout, rnn_cahce)
         grads['Wx'],grads['Wh'] = dWx,dWh
         grads['b'] = db
         dw_e = word_embedding_backward(dout, embed_cache)
@@ -161,7 +161,7 @@ class CaptioningRNN(object):
         
         #Gradient Clipping Part
         if self.gclip > 0:
-            grads = self.clip_grand_norm(grads,self.gclip)
+            grads = self.clip_grad_norm(grads,self.gclip)
         
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
@@ -193,7 +193,7 @@ class CaptioningRNN(object):
             clipped_g_key = gk
             g_norm = np.sum(clipped_g_value * clipped_g_value)
             if g_norm > gclip:
-                clipped_grads[clipped_g_key] = (gclip/g_norm) * (gclip/g_norm)
+                clipped_grads[clipped_g_key] *= (gclip/g_norm)
             
             
         
@@ -264,7 +264,8 @@ class CaptioningRNN(object):
         h_s,_ = affine_forward(features,W_proj,b_proj)
         e_w, _ = word_embedding_forward(self._start, W_embed)
         
-        for c in range(0,len(max_length):
+        for c in range(max_length):
+            h_s,_ = rnn_step_forward(e_w, h_s, Wx, Wh, b)
             s, _ = affine_forward(h_s, W_vocab, b_vocab)
             captions[:,c] = np.argmax(s, axis=1)
             e_w, _ = word_embedding_forward(captions[:, c], W_embed)
@@ -335,9 +336,9 @@ class CaptioningRNN(object):
         h_s,_ = affine_forward(features,W_proj,b_proj)
         e_w, _ = word_embedding_forward(self._start, W_embed)
         
-        for c in range(0,len(max_length):
+        for c in range(0,max_length):
             s, _ = affine_forward(h_s, W_vocab, b_vocab)
-            captions[:,c] = np.random.choice(s)
+            captions[:,c] = np.random.choice(s[0])
             e_w, _ = word_embedding_forward(captions[:, c], W_embed)
 
 
